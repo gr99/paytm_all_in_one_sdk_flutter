@@ -1,6 +1,5 @@
 # PayTM All-in-One SDK Integration In Flutter App.
 
-Flutter project.
 
 ## Getting Started
 
