@@ -8,31 +8,9 @@ import 'package:new_app/edit_text.dart';
 import 'package:paytm_allinonesdk/paytm_allinonesdk.dart';
 
 void main() {
-  runApp(MyApp());
-}
-
-class User {
-  String id;
-  String first_name;
-  String last_name;
-  String mobileno;
-  String email;
-
-  User(this.id, this.first_name, this.last_name, this.mobileno, this.email);
-
-  factory User.fromJson(dynamic json) {
-    return User(
-        json['_id'] as String,
-        json['first_name'] as String,
-        json['last_name'] as String,
-        json['mobileno'] as String,
-        json['email'] as String);
-  }
-
-  @override
-  String toString() {
-    return '{ ${this.id},${this.first_name}, ${this.last_name},${this.mobileno},${this.email} }';
-  }
+  runApp(MyApp()
+      // MyApp()
+      );
 }
 
 class MyApp extends StatelessWidget {
@@ -59,7 +37,9 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  Future<String> generateToken() async {
+  String orderId = "Order_" + DateTime.now().millisecondsSinceEpoch.toString();
+
+  Future<String> generateToken(String amount) async {
     print("Hii");
     await http
         .post(Uri.parse("http://10.0.2.2:3100/generateTxnToken"),
@@ -68,11 +48,11 @@ class _HomeScreenState extends State<HomeScreen> {
             },
             body: jsonEncode({
               "amount": amount,
-              "orderId": orderId,
-              "custId": user.id,
-              "email": user.email,
-              "mobile": user.mobileno,
-              "mode": 1,
+              "orderId": orderId, //orderId must Be unique
+              "custId": "User_12334343453",
+              "email": "Gaurav.bidwai99@gmail.com",
+              "mobile": "7219240747",
+              "mode": 3,//For "0":Balance,"1":Net Banking,,"2":UPI,"3":Credit Card or Dabit Card
               "website": "WEBSTAGING",
               "testing": 0
             }))
@@ -83,46 +63,18 @@ class _HomeScreenState extends State<HomeScreen> {
       });
     }
   }
-
-  fetchDate() async {
-    // SharedPreferences prefs = await SharedPreferences.getInstance();
-    //
-    // String token =prefs.getString('token');
-    String token =
-        "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjYwMDliOGRjM2UxNWQ1MzJlY2UzYTU2ZSIsImlhdCI6MTYxODIxOTQxM30.yPh873atIC49ppZllsuG6O09_tPG5cbz07-dr7JoS8M";
-    final response =
-        await http.post(Uri.parse("http://10.0.2.2:3000/personal_info"),
-            headers: {
-              'Content-Type': 'application/json;charset=UTF-8',
-            },
-            body: jsonEncode({"token": token}));
-    if (response.statusCode == 200) {
-      user = User.fromJson(jsonDecode(response.body)['user']);
-      if (user != null) {
-        generateToken();
-      }
-    }
-  }
-
-  @override
-  void initState() {
-    super.initState();
-    fetchDate();
-    print("inint");
-  }
-
   bool isloading = true;
   var response;
-  User user;
   String mid = "hhmpXO40944790524496",
       custId = "Cust_12345678",
-      amount = "22",
-      txnToken,email , mobile ;
+      amount="22",
+      txnToken,
+      email,
+      mobile;
 
   var result;
   bool isStaging = false;
   bool isApiCallInprogress = true;
-  String orderId = "Order_" + DateTime.now().millisecondsSinceEpoch.toString();
   String callbackUrl =
       "https://securegw-stage.paytm.in/theia/paytmCallback?ORDER_ID=";
 
@@ -131,25 +83,6 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    fetchDate() async {
-      // SharedPreferences prefs = await SharedPreferences.getInstance();
-      // String token =prefs.getString('token');
-      final response =
-          await http.post(Uri.parse("http://10.0.2.2:3000/personal_info"),
-              headers: {
-                'Content-Type': 'application/json;charset=UTF-8',
-              },
-              body: jsonEncode({
-                "token":
-                    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjYwMDliOGRjM2UxNWQ1MzJlY2UzYTU2ZSIsImlhdCI6MTYxODIxOTQxM30.yPh873atIC49ppZllsuG6O09_tPG5cbz07-dr7JoS8M"
-              }));
-      if (response.statusCode == 200) {
-        // setState(() {
-        user = User.fromJson(jsonDecode(response.body)['user']);
-        // });
-      }
-    }
-
     return Card(
       child: SingleChildScrollView(
         child: Container(
@@ -157,9 +90,32 @@ class _HomeScreenState extends State<HomeScreen> {
           child: Column(
             children: <Widget>[
               // EditText('Merchant ID', mid, onChange: (val) => mid = val),
-              EditText('Order ID', orderId, onChange: (val) => orderId = val),
-              EditText('Amount', amount, onChange: (val) => amount = val),
-              EditText('Transaction Token', txnToken),
+              EditText(
+                'Order ID',
+                orderId,
+                onChange: (val) => orderId = val,
+                isEnabled: false,
+              ),
+              EditText(
+                'Amount',
+                amount,
+                onChange: (val) => amount = val,
+                isEnabled: true,
+              ),
+              Container(
+                margin: EdgeInsets.all(16),
+                child: ElevatedButton(
+                  onPressed:() {
+                    generateToken(amount);
+                  },
+                  child: Text('Fetch Token'),
+                ),
+              ),
+              EditText(
+                'Transaction Token',
+                txnToken,
+                isEnabled: false,
+              ),
               Row(
                 children: <Widget>[
                   Checkbox(
@@ -192,7 +148,6 @@ class _HomeScreenState extends State<HomeScreen> {
                   onPressed: isApiCallInprogress
                       ? null
                       : () {
-                          // print(user.first_name);
                           _startTransaction();
                         },
                   child: Text('Start Transcation'),
