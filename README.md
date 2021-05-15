@@ -38,5 +38,5 @@ Login to ➡ https://dashboard.paytm.com/login/ with your Paytm account details.
   
   # To conclude
   
-## These repositories have enough code to handle vanilla flow and to test if everything is configured properly. 
-## You can add more features in API or even integrate same in another API as well.
+ These repositories have enough code to handle vanilla flow and to test if everything is configured properly. 
+You can add more features in API or even integrate same in another API as well.
