@@ -29,6 +29,7 @@ class MyApp extends StatelessWidget {
   }
 }
 
+
 class HomeScreen extends StatefulWidget {
   @override
   State<StatefulWidget> createState() {
@@ -39,8 +40,7 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   String orderId = "Order_" + DateTime.now().millisecondsSinceEpoch.toString();
 
-  Future<String> generateToken(String amount) async {
-    print("Hii");
+  generateToken(String amount) async {
     await http
         .post(Uri.parse("http://10.0.2.2:3100/generateTxnToken"),
             headers: <String, String>{
@@ -48,11 +48,13 @@ class _HomeScreenState extends State<HomeScreen> {
             },
             body: jsonEncode({
               "amount": amount,
-              "orderId": orderId, //orderId must Be unique
+              "orderId": orderId,
+              //orderId must Be unique
               "custId": "User_12334343453",
               "email": "Gaurav.bidwai99@gmail.com",
               "mobile": "7219240747",
-              "mode": 3,//For "0":Balance,"1":Net Banking,,"2":UPI,"3":Credit Card or Dabit Card
+              "mode": 1,
+              //For "0":Balance,"1":Net Banking,,"2":UPI,"3":Credit Card or Dabit Card
               "website": "WEBSTAGING",
               "testing": 0
             }))
@@ -63,11 +65,12 @@ class _HomeScreenState extends State<HomeScreen> {
       });
     }
   }
+
   bool isloading = true;
   var response;
   String mid = "hhmpXO40944790524496",
       custId = "Cust_12345678",
-      amount="22",
+      amount = "22",
       txnToken,
       email,
       mobile;
@@ -105,7 +108,7 @@ class _HomeScreenState extends State<HomeScreen> {
               Container(
                 margin: EdgeInsets.all(16),
                 child: ElevatedButton(
-                  onPressed:() {
+                  onPressed: () {
                     generateToken(amount);
                   },
                   child: Text('Fetch Token'),
@@ -177,20 +180,84 @@ class _HomeScreenState extends State<HomeScreen> {
       response.then((value) {
         setState(() {
           result = value;
+          Navigator.push(context, MaterialPageRoute (
+            builder: (BuildContext context) => ConvertString(result: result,),
+          ),);
         });
       }).catchError((onError) {
         if (onError is PlatformException) {
           setState(() {
             result = onError.message + " \n  " + onError.details.toString();
+            Navigator.push(context, MaterialPageRoute (
+              builder: (BuildContext context) => ConvertString(result: onError.details,),
+            ),);
           });
         } else {
           setState(() {
             result = onError.toString();
+            Navigator.push(context, MaterialPageRoute (
+              builder: (BuildContext context) => ConvertString(result: onError,),
+            ),);
           });
         }
       });
     } catch (err) {
       result = err.message;
     }
+  }
+}
+
+
+class Result {
+  String status;
+  String bankName;
+  String payMode;
+  String txnId;
+  String bankTxnId;
+  String rspMsg;
+  String txnDate;
+
+  Result(this.status,this.bankName, this.payMode, this.txnId, this.bankTxnId, this.rspMsg,this.txnDate);
+
+  factory Result.fromJson(dynamic json) {
+    return Result(
+        json['STATUS'] as String,
+        json['GATEWAYNAME'] as String,
+        json['PAYMENTMODE'] as String,
+        json['TXNID'] as String,
+        json['BANKTXNID'] as String,
+        json['RESPMSG'] as String,
+        json['TXNDATE'] as String);
+
+  }
+
+  @override
+  String toString() {
+    return '{ ${this.status},${this.bankName}, ${this.payMode},${this.txnId},${this.bankTxnId},${this.rspMsg},${this.txnDate} }';
+  }
+}
+
+class ConvertString extends StatefulWidget {
+  final result;
+  const ConvertString({this.result});
+
+  @override
+  _ConvertStringState createState() => _ConvertStringState();
+}
+
+class _ConvertStringState extends State<ConvertString> {
+  @override
+  Widget build(BuildContext context) {
+    return SafeArea(child:
+    Center(
+      child: ElevatedButton(
+        child: Text("Convert"),
+        onPressed: (){
+          Result user = Result.fromJson(widget.result);
+          print(user);
+        }
+      ),
+    )
+    );
   }
 }
